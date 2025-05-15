@@ -21,7 +21,7 @@ A Node.js application that automatically adds a free gift to a Shopify cart when
 1. Clone this repository
 
    ````bash
-   git clone https://github.com/YOUR_USERNAME/shopify-free-gift-logic.git
+   git clone https://github.com/Chandan-devs-tech/shopify-free-gift-logic.git
    cd shopify-free-gift-logic
    ```bash
 
