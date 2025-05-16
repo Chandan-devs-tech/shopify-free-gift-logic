@@ -144,7 +144,7 @@ app.get("/status", (req, res) => {
 app.get("/setup-webhook", async (req, res) => {
   try {
     const response = await axios.post(
-      `https://${shopifyStore}/admin/api/2023-10/webhooks.json`,
+      `https://${shopifyStore}/admin/api/2024-10/webhooks.json`,
       {
         webhook: {
           topic: "carts/update",
