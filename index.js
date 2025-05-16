@@ -183,8 +183,11 @@ app.post("/webhook-handler", async (req, res) => {
     const cartData = req.body;
     console.log("Received webhook:", cartData);
 
-    // Process the cart value directly
-    const cartValue = parseFloat(cartData.total_price || "0");
+    // Calculate the cart value from line items
+    const cartValue = cartData.line_items.reduce((total, item) => {
+      return total + (parseFloat(item.line_price) || 0);
+    }, 0);
+
     const cartId = cartData.id;
 
     console.log(`Processing cart ${cartId} with value: ₹${cartValue}`);
