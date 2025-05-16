@@ -38,7 +38,7 @@ app.post("/check-cart", async (req, res) => {
     let cartId = cart_id;
     if (!cartId && cart_token) {
       const draftOrdersResponse = await axios.get(
-        `https://${shopifyStore}/admin/api/2023-10/draft_orders.json`,
+        `https://${shopifyStore}/admin/api/2024-10/draft_orders.json`,
         { headers: shopifyHeaders }
       );
 
@@ -54,7 +54,7 @@ app.post("/check-cart", async (req, res) => {
     }
 
     const cartResponse = await axios.get(
-      `https://${shopifyStore}/admin/api/2023-10/draft_orders/${cartId}.json`,
+      `https://${shopifyStore}/admin/api/2024-10/draft_orders/${cartId}.json`,
       { headers: shopifyHeaders }
     );
 
@@ -65,7 +65,7 @@ app.post("/check-cart", async (req, res) => {
     if (cart_value >= MINIMUM_CART_VALUE) {
       if (!freeGiftItem) {
         const productsResponse = await axios.get(
-          `https://${shopifyStore}/admin/api/2023-10/products.json`,
+          `https://${shopifyStore}/admin/api/2024-10/products.json`,
           { headers: shopifyHeaders }
         );
 
@@ -85,7 +85,7 @@ app.post("/check-cart", async (req, res) => {
         const variantId = freeGiftProduct.variants[0].id;
 
         await axios.put(
-          `https://${shopifyStore}/admin/api/2023-10/draft_orders/${cartId}.json`,
+          `https://${shopifyStore}/admin/api/2024-10/draft_orders/${cartId}.json`,
           {
             draft_order: {
               line_items: [
@@ -111,7 +111,7 @@ app.post("/check-cart", async (req, res) => {
         );
 
         await axios.put(
-          `https://${shopifyStore}/admin/api/2023-10/draft_orders/${cartId}.json`,
+          `https://${shopifyStore}/admin/api/2024-10/draft_orders/${cartId}.json`,
           {
             draft_order: {
               line_items: updatedLineItems,
@@ -181,25 +181,41 @@ app.post("/webhook-handler", async (req, res) => {
   try {
     // Get cart data from webhook
     const cartData = req.body;
-
-    // Check if this is actually a cart update webhook
     console.log("Received webhook:", cartData);
 
-    // Get the cart ID and token (if available)
-    const cartId = cartData.id;
-    const cartToken = cartData.token;
+    // Process the cart value directly
     const cartValue = parseFloat(cartData.total_price || "0");
+    const cartId = cartData.id;
 
-    // Process the cart using your existing logic
-    // This will leverage your existing check-cart code logic
-    await processCart(cartId, cartToken, cartValue);
+    console.log(`Processing cart ${cartId} with value: ₹${cartValue}`);
+
+    if (cartValue >= MINIMUM_CART_VALUE) {
+      console.log(
+        "✅ Cart value exceeds threshold (₹11,000), free gift should be added"
+      );
+      // Note: For demo purposes, we're just logging the action that would happen
+      // In a production app, we would use the Storefront API to add the free gift
+    } else {
+      console.log(
+        "❌ Cart value below threshold (₹11,000), free gift should be removed"
+      );
+      // Note: For demo purposes, we're just logging the action that would happen
+    }
 
     // Return 200 OK to acknowledge receipt
-    res.status(200).end();
+    res.status(200).json({
+      success: true,
+      message: "Webhook received successfully",
+      cart_value: cartValue,
+      threshold: MINIMUM_CART_VALUE,
+      action:
+        cartValue >= MINIMUM_CART_VALUE
+          ? "would_add_free_gift"
+          : "would_remove_free_gift",
+    });
   } catch (error) {
     console.error("Error processing webhook:", error);
-    // Still return 200 so Shopify doesn't retry
-    res.status(200).end();
+    res.status(200).end(); // Still return 200 so Shopify doesn't retry
   }
 });
 
@@ -208,7 +224,7 @@ async function processCart(cartId, cartToken, cartValue) {
   try {
     // This reuses your existing logic, but now as a function
     const cartResponse = await axios.get(
-      `https://${shopifyStore}/admin/api/2023-10/draft_orders/${cartId}.json`,
+      `https://${shopifyStore}/admin/api/2024-10/draft_orders/${cartId}.json`,
       { headers: shopifyHeaders }
     );
 
@@ -219,7 +235,7 @@ async function processCart(cartId, cartToken, cartValue) {
       if (!freeGiftItem) {
         // Add free gift logic (your existing code)
         const productsResponse = await axios.get(
-          `https://${shopifyStore}/admin/api/2023-10/products.json`,
+          `https://${shopifyStore}/admin/api/2024-10/products.json`,
           { headers: shopifyHeaders }
         );
 
@@ -239,7 +255,7 @@ async function processCart(cartId, cartToken, cartValue) {
         const variantId = freeGiftProduct.variants[0].id;
 
         await axios.put(
-          `https://${shopifyStore}/admin/api/2023-10/draft_orders/${cartId}.json`,
+          `https://${shopifyStore}/admin/api/2024-10/draft_orders/${cartId}.json`,
           {
             draft_order: {
               line_items: [
@@ -266,7 +282,7 @@ async function processCart(cartId, cartToken, cartValue) {
         );
 
         await axios.put(
-          `https://${shopifyStore}/admin/api/2023-10/draft_orders/${cartId}.json`,
+          `https://${shopifyStore}/admin/api/2024-10/draft_orders/${cartId}.json`,
           {
             draft_order: {
               line_items: updatedLineItems,
