@@ -179,11 +179,9 @@ app.listen(PORT, () => {
 
 app.post("/webhook-handler", async (req, res) => {
   try {
-    // Get cart data from webhook
     const cartData = req.body;
     console.log("Received webhook:", cartData);
 
-    // Calculate the cart value from line items
     const cartValue = cartData.line_items.reduce((total, item) => {
       return total + (parseFloat(item.line_price) || 0);
     }, 0);
@@ -196,16 +194,12 @@ app.post("/webhook-handler", async (req, res) => {
       console.log(
         "✅ Cart value exceeds threshold (₹11,000), free gift should be added"
       );
-      // Note: For demo purposes, we're just logging the action that would happen
-      // In a production app, we would use the Storefront API to add the free gift
     } else {
       console.log(
         "❌ Cart value below threshold (₹11,000), free gift should be removed"
       );
-      // Note: For demo purposes, we're just logging the action that would happen
     }
 
-    // Return 200 OK to acknowledge receipt
     res.status(200).json({
       success: true,
       message: "Webhook received successfully",
@@ -218,14 +212,12 @@ app.post("/webhook-handler", async (req, res) => {
     });
   } catch (error) {
     console.error("Error processing webhook:", error);
-    res.status(200).end(); // Still return 200 so Shopify doesn't retry
+    res.status(200).end();
   }
 });
 
-// Helper function to reuse your existing cart processing logic
 async function processCart(cartId, cartToken, cartValue) {
   try {
-    // This reuses your existing logic, but now as a function
     const cartResponse = await axios.get(
       `https://${shopifyStore}/admin/api/2024-10/draft_orders/${cartId}.json`,
       { headers: shopifyHeaders }
@@ -236,7 +228,6 @@ async function processCart(cartId, cartToken, cartValue) {
 
     if (cartValue >= MINIMUM_CART_VALUE) {
       if (!freeGiftItem) {
-        // Add free gift logic (your existing code)
         const productsResponse = await axios.get(
           `https://${shopifyStore}/admin/api/2024-10/products.json`,
           { headers: shopifyHeaders }
@@ -279,7 +270,6 @@ async function processCart(cartId, cartToken, cartValue) {
       }
     } else {
       if (freeGiftItem) {
-        // Remove free gift logic (your existing code)
         const updatedLineItems = cart.line_items.filter(
           (item) => !isFreeGift(item)
         );
